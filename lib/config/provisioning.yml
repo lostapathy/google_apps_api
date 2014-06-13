@@ -56,3 +56,7 @@
     :move_user_to_orgunit:
       :method: :put
       :path: ":feed:/a/feeds/orgunit/2.0/:customerid:/:orgunit:"
+
+    :change_domain:
+      :method: :put
+      :path: ":feed:/a/feeds/user/userEmail/2.0/:domain:/:new_email:"

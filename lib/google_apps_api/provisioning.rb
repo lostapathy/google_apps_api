@@ -112,6 +112,39 @@ module GoogleAppsApi #:nodoc:
         DESCXML
         request(:update_user, options.merge(:username => username, :body => res.strip))
       end
+
+      def update_username(username, *args)
+        options = args.extract_options!      
+        options.each { |k,v| options[k] = escapeXML(v)}
+
+        res = <<-DESCXML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <atom:entry xmlns:atom="http://www.w3.org/2005/Atom"
+        xmlns:apps="http://schemas.google.com/apps/2006">
+        <atom:category scheme="http://schemas.google.com/g/2005#kind"
+        term="http://schemas.google.com/apps/2006#user"/>
+        <apps:login userName="#{options[:newusername]}" />
+        </atom:entry>
+
+        DESCXML
+        request(:update_user, options.merge(:username => username, :body => res.strip))
+      end
+
+      def change_domain(username, *args)
+        options = args.extract_options!      
+        options.each { |k,v| options[k] = escapeXML(v)}
+
+	newemail = "#{username}@#{options[:new_domain]}"
+
+        res = <<-DESCXML
+        <atom:entry xmlns:atom='http://www.w3.org/2005/Atom'
+        xmlns:apps='http://schemas.google.com/apps/2006'>
+        <apps:property name='newEmail' value='#{newemail}'/>
+        </atom:entry>
+
+        DESCXML
+        request(:change_domain, options.merge(:username => username, :body => res.strip, :domain => options[:old_domain], :new_email => newemail))
+      end
                                                                                                             
 
     end
