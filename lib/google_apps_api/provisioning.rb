@@ -147,6 +147,89 @@ module GoogleAppsApi #:nodoc:
       end
                                                                                                             
 
+      def create_group(groupid, *args)
+        options = args.extract_options!      
+        options.each { |k,v| options[k] = escapeXML(v)}
+
+        perms = options[:permission] || "Admin"
+
+        res = <<-DESCXML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <atom:entry xmlns:atom="http://www.w3.org/2005/Atom"
+        xmlns:apps="http://schemas.google.com/apps/2006">
+        <apps:property name="groupId" value="#{escapeXML(groupid)}"></apps:property>
+        <apps:property name="groupName" value="#{options[:name]}"></apps:property>
+        <apps:property name="description" value="#{options[:description]}"></apps:property>
+        <apps:property name="emailPermission" value="#{perms}"></apps:property>
+        </atom:entry>
+
+        DESCXML
+        request(:create_group, options.merge(:groupid => groupid, :body => res.strip))
+      end
+
+      def retrieve_all_groups(*args)
+        options = args.extract_options!
+        request(:retrieve_all_groups, options)
+      end
+
+      def retrieve_groups_for_user(memberid, *args)
+        options = args.extract_options!
+        direct = options.has_key?(:direct) ? options[:direct] : false
+        request(:retrieve_groups_for_user, options.merge(:memberid => memberid, :direct => direct))
+      end
+
+      def update_group(groupid, *args)
+        options = args.extract_options!      
+        options.each { |k,v| options[k] = escapeXML(v)}
+
+        perms = options[:permission] || "Admin"
+
+        res = <<-DESCXML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <atom:entry xmlns:atom="http://www.w3.org/2005/Atom"
+        xmlns:apps="http://schemas.google.com/apps/2006">
+        <apps:property name="groupId" value="#{escapeXML(groupid)}"></apps:property>
+        <apps:property name="groupName" value="#{options[:name]}"></apps:property>
+        <apps:property name="description" value="#{options[:description]}"></apps:property>
+        <apps:property name="emailPermission" value="#{perms}"></apps:property>
+        </atom:entry>
+        DESCXML
+        request(:update_group, options.merge(:body => res.strip))
+      end
+
+      def delete_group(groupid, *args)
+        options = args.extract_options!.merge(:groupid => groupid)
+        request(:delete_group, options)
+      end
+
+      def add_user_to_group(groupid, userid, *args)
+        options = args.extract_options!
+
+        res = <<-DESCXML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <atom:entry xmlns:atom="http://www.w3.org/2005/Atom"
+        xmlns:apps="http://schemas.google.com/apps/2006">
+        <apps:property name="memberId" value="#{escapeXML(userid)}"/>
+        </atom:entry>
+        DESCXML
+        request(:add_user_to_group, options.merge(:groupid => groupid, :body => res.strip))
+      end
+
+      def retrieve_group_members(groupid, *args)
+        options = args.extract_options!
+        request(:retrieve_group_members, options.merge(:groupid => groupid))
+      end
+
+      def retrieve_group_member(groupid, memberid, *args)
+        options = args.extract_options!
+        request(:retrieve_group_member, options.merge(:groupid => groupid, :memberid => memberid))
+      end
+
+      def remove_user_from_group(groupid, memberid, *args)
+        options = args.extract_options!
+        request(:remove_user_from_group, options.merge(:groupid => groupid, :memberid => memberid))
+      end
+
     end
 
   end
@@ -212,4 +295,51 @@ module GoogleAppsApi #:nodoc:
     end
     
   end
+
+  class GroupEntity < Entity
+    attr_accessor :id, :name, :permission, :description
+
+    def initialize(*args)
+      options = args.extract_options!
+      if (_xml = options[:xml])
+        xml = _xml.at_css("entry") || _xml
+        xml.css("apps|property").each do |x|
+          case x.attribute("name").to_s
+          when "groupId"
+            @id = x.attribute("value").to_s
+          when "groupName"
+            @name = x.attribute("value").to_s
+          when "emailPermission"
+            @permission = x.attribute("value").to_s
+          when "description"
+            @description = x.attribute("value").to_s
+          end
+        end
+      end
+    end
+
+  end
+
+  class GroupMemberEntity < Entity
+    attr_accessor :id, :type, :direct
+
+    def initialize(*args)
+      options = args.extract_options!
+      if (_xml = options[:xml])
+        xml = _xml.at_css("entry") || _xml
+        xml.css("apps|property").each do |x|
+          case x.attribute("name").to_s
+          when "memberId"
+            @id = x.attribute("value").to_s
+          when "memberType"
+            @type = x.attribute("value").to_s
+          when "directMember"
+            @direct = x.attribute("value").to_s
+          end
+        end
+      end
+    end
+
+  end
+
 end
