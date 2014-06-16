@@ -7,6 +7,7 @@
     :auth: https://www.google.com
     :feed: https://apps-apis.google.com
     :path_user: ":feed:/a/feeds/:domain:/user/2.0"    
+    :path_group: ":feed:/a/feeds/group/2.0/:domain:"    
     
   :action_hash:
     :domain_login:
@@ -60,3 +61,49 @@
     :change_domain:
       :method: :put
       :path: ":feed:/a/feeds/user/userEmail/2.0/:domain:/:new_email:"
+
+    :create_group:
+      :method: :post
+      :path: ":path_group:"
+      :format: GoogleAppsApi::GroupEntity
+
+    :update_group:
+      :method: :put
+      :path: ":path_group:/:groupid:"
+      :format: GoogleAppsApi::GroupEntity
+
+    :delete_group:
+      :method: :delete
+      :path: ":path_group:/:groupid:"
+
+    :retrieve_all_groups:
+      :method: :get
+      :path: ":path_group:"
+      :feed: true
+      :format: GoogleAppsApi::GroupEntity
+
+    :retrieve_groups_for_user:
+      :method: :get
+      :path: ":path_group:/?member=:memberid:&directOnly=:direct:"
+      :feed: true
+      :format: GoogleAppsApi::GroupEntity
+
+    :add_user_to_group:
+      :method: :post
+      :path: ":path_group:/:groupid:/member"
+      :format: GoogleAppsApi::GroupMemberEntity
+
+    :remove_user_from_group:
+      :method: :delete
+      :path: ":path_group:/:groupid:/member/:memberid:"
+
+    :retrieve_group_members:
+      :method: :get
+      :path: ":path_group:/:groupid:/member"
+      :feed: true
+      :format: GoogleAppsApi::GroupMemberEntity
+
+    :retrieve_group_member:
+      :method: :get
+      :path: ":path_group:/:groupid:/member/:memberid:"
+      :format: GoogleAppsApi::GroupMemberEntity
